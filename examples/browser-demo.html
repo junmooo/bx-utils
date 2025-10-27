@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bx-utils 浏览器示例</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 10px;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .section h2 {
+      color: #007bff;
+      margin-top: 0;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    input {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 5px;
+      width: 200px;
+    }
+    .result {
+      background-color: #e7f3ff;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>bx-utils 浏览器示例</h1>
+
+  <div class="section">
+    <h2>剪贴板操作</h2>
+    <input type="text" id="copyInput" placeholder="输入要复制的文本" value="Hello bx-utils!">
+    <button onclick="handleCopy()">复制文本</button>
+    <button onclick="handleRead()">读取剪贴板</button>
+    <div class="result" id="clipboardResult"></div>
+  </div>
+
+  <div class="section">
+    <h2>校验工具</h2>
+    <div>
+      <input type="text" id="idCardInput" placeholder="输入身份证号" value="11010119900101001X">
+      <button onclick="validateIdCardDemo()">验证身份证</button>
+    </div>
+    <div>
+      <input type="text" id="phoneInput" placeholder="输入手机号" value="13800138000">
+      <button onclick="validatePhoneDemo()">验证手机号</button>
+    </div>
+    <div>
+      <input type="text" id="emailInput" placeholder="输入邮箱" value="test@example.com">
+      <button onclick="validateEmailDemo()">验证邮箱</button>
+    </div>
+    <div class="result" id="validateResult"></div>
+  </div>
+
+  <div class="section">
+    <h2>格式化工具</h2>
+    <button onclick="formatDemo()">运行格式化示例</button>
+    <div class="result" id="formatResult"></div>
+  </div>
+
+  <div class="section">
+    <h2>数组操作</h2>
+    <button onclick="arrayDemo()">运行数组操作示例</button>
+    <div class="result" id="arrayResult"></div>
+  </div>
+
+  <div class="section">
+    <h2>随机工具</h2>
+    <button onclick="randomDemo()">生成随机数据</button>
+    <div class="result" id="randomResult"></div>
+  </div>
+
+  <div class="section">
+    <h2>存储操作</h2>
+    <button onclick="storageDemo()">测试 Storage</button>
+    <button onclick="clearStorage()">清空 Storage</button>
+    <div class="result" id="storageResult"></div>
+  </div>
+
+  <script type="module">
+    // 在实际使用时，应该从 npm 包导入
+    // import * as bxUtils from 'bx-utils';
+    
+    // 这里使用构建后的文件
+    import * as bxUtils from '../dist/index.esm.js';
+    
+    window.bxUtils = bxUtils;
+
+    // 剪贴板操作
+    window.handleCopy = async function() {
+      const text = document.getElementById('copyInput').value;
+      const success = await bxUtils.copyText(text);
+      document.getElementById('clipboardResult').textContent = 
+        success ? `✓ 复制成功: ${text}` : '✗ 复制失败';
+    };
+
+    window.handleRead = async function() {
+      const text = await bxUtils.readClipboardText();
+      document.getElementById('clipboardResult').textContent = 
+        `剪贴板内容: ${text}`;
+    };
+
+    // 校验工具
+    window.validateIdCardDemo = function() {
+      const idCard = document.getElementById('idCardInput').value;
+      const isValid = bxUtils.validateIdCard(idCard);
+      document.getElementById('validateResult').textContent = 
+        `身份证 ${idCard} ${isValid ? '✓ 有效' : '✗ 无效'}`;
+    };
+
+    window.validatePhoneDemo = function() {
+      const phone = document.getElementById('phoneInput').value;
+      const isValid = bxUtils.validatePhone(phone);
+      document.getElementById('validateResult').textContent = 
+        `手机号 ${phone} ${isValid ? '✓ 有效' : '✗ 无效'}`;
+    };
+
+    window.validateEmailDemo = function() {
+      const email = document.getElementById('emailInput').value;
+      const isValid = bxUtils.validateEmail(email);
+      document.getElementById('validateResult').textContent = 
+        `邮箱 ${email} ${isValid ? '✓ 有效' : '✗ 无效'}`;
+    };
+
+    // 格式化工具
+    window.formatDemo = function() {
+      const results = [
+        `文件大小: ${bxUtils.formatFileSize(1536000)}`,
+        `金额: ${bxUtils.formatCurrency(12345.67)}`,
+        `数字: ${bxUtils.formatNumber(1234567)}`,
+        `日期: ${bxUtils.formatDate(new Date(), 'YYYY-MM-DD HH:mm:ss')}`,
+        `中文数字: ${bxUtils.numberToChinese(12345)}`,
+      ];
+      document.getElementById('formatResult').textContent = results.join('\n');
+    };
+
+    // 数组操作
+    window.arrayDemo = function() {
+      const arr = [1, 2, 2, 3, 3, 4, 5];
+      const results = [
+        `原数组: [${arr}]`,
+        `去重: [${bxUtils.unique(arr)}]`,
+        `分组(2): ${JSON.stringify(bxUtils.chunk(arr, 2))}`,
+        `求和: ${bxUtils.sum(arr)}`,
+        `平均值: ${bxUtils.average(arr)}`,
+        `最大值: ${bxUtils.max(arr)}`,
+        `最小值: ${bxUtils.min(arr)}`,
+      ];
+      document.getElementById('arrayResult').textContent = results.join('\n');
+    };
+
+    // 随机工具
+    window.randomDemo = function() {
+      const results = [
+        `随机字符串: ${bxUtils.randomString(16)}`,
+        `UUID: ${bxUtils.uuid()}`,
+        `随机整数(1-100): ${bxUtils.randomInt(1, 100)}`,
+        `打乱数组: [${bxUtils.shuffle([1, 2, 3, 4, 5])}]`,
+      ];
+      document.getElementById('randomResult').textContent = results.join('\n');
+    };
+
+    // 存储操作
+    window.storageDemo = function() {
+      const user = { name: 'Tom', age: 20 };
+      bxUtils.storage.set('user', user);
+      bxUtils.cookie.set('token', 'abc123', 7);
+      
+      const storedUser = bxUtils.storage.get('user');
+      const token = bxUtils.cookie.get('token');
+      
+      const results = [
+        `存储的用户: ${JSON.stringify(storedUser)}`,
+        `Cookie token: ${token}`,
+      ];
+      document.getElementById('storageResult').textContent = results.join('\n');
+    };
+
+    window.clearStorage = function() {
+      bxUtils.storage.clear();
+      bxUtils.cookie.remove('token');
+      document.getElementById('storageResult').textContent = '✓ 存储已清空';
+    };
+  </script>
+</body>
+</html>
