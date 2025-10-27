@@ -49,7 +49,7 @@ export {
 
 // 字符串操作
 export {
-  isEmpty,
+  isEmptyStr,
   capitalize,
   camelToSnake,
   snakeToCamel,
@@ -79,4 +79,5 @@ export {
   curry,
   compose,
   pipe,
+  isEmpty,
 } from './common';
