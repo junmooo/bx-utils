@@ -3,7 +3,7 @@
  * @param str 字符串
  * @returns boolean
  */
-export function isEmpty(str: string | null | undefined): boolean {
+export function isEmptyStr(str: string | null | undefined): boolean {
   return !str || str.trim().length === 0;
 }
 
