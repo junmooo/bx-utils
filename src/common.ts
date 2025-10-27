@@ -89,3 +89,11 @@ export function pipe<T>(...fns: Array<(arg: T) => T>) {
     return fns.reduce((acc, fn) => fn(acc), value);
   };
 }
+
+/**
+ * [非空判断] 空字符串、null、undefined、空对象、空数组均视为“空”
+ * @param {*} val 
+ */
+export const isEmpty = (val: unknown) => {
+  return val === '' || val === null || val === undefined || JSON.stringify(val) === '{}' || (Array.isArray(val) && val.length === 0);
+};
