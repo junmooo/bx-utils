@@ -1,5 +1,5 @@
 import {
-  isEmpty,
+  isEmptyStr,
   capitalize,
   camelToSnake,
   snakeToCamel,
@@ -12,19 +12,19 @@ import {
 describe('string', () => {
   describe('isEmpty', () => {
     it('应该判断空字符串', () => {
-      expect(isEmpty('')).toBe(true);
-      expect(isEmpty('  ')).toBe(true);
-      expect(isEmpty('\t\n')).toBe(true);
+      expect(isEmptyStr('')).toBe(true);
+      expect(isEmptyStr('  ')).toBe(true);
+      expect(isEmptyStr('\t\n')).toBe(true);
     });
 
     it('应该判断非空字符串', () => {
-      expect(isEmpty('hello')).toBe(false);
-      expect(isEmpty(' hello ')).toBe(false);
+      expect(isEmptyStr('hello')).toBe(false);
+      expect(isEmptyStr(' hello ')).toBe(false);
     });
 
     it('应该处理 null 和 undefined', () => {
-      expect(isEmpty(null)).toBe(true);
-      expect(isEmpty(undefined)).toBe(true);
+      expect(isEmptyStr(null)).toBe(true);
+      expect(isEmptyStr(undefined)).toBe(true);
     });
   });
 
