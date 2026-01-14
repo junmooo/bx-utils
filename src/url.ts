@@ -13,6 +13,27 @@ export function getUrlParams(url: string = window.location.href): Record<string,
 }
 
 /**
+ * 获取地址栏里所有参数的键值对
+ */
+export const formatUrl = (urlStr: string) => {
+  if (!(typeof urlStr === 'string' && urlStr.length)) urlStr = window.location.href;
+  var reg = /(?:[?&]+)([^&]+)=([^&]+)/g;
+  var data: Record<string, string> = {};
+
+  function fn(str: string, pro: string, value: string) {
+    data[decodeURIComponent(pro)] = decodeURIComponent(value);
+  }
+  let urlStrList = urlStr.split('#');
+  for (let i = 0; i < urlStrList.length; i++) {
+    urlStrList[i].replace(reg, (substring, ...args) => {
+      fn(substring, args[0], args[1]);
+      return substring;
+    });
+  }
+  return data;
+};
+
+/**
  * 设置URL参数
  * @param url URL字符串
  * @param params 参数对象
