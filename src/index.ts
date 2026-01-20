@@ -70,6 +70,9 @@ export {
 // 存储操作
 export { storage, cookie } from './storage';
 
+// 图片操作
+export { compressImage } from './image';
+
 // 通用工具
 export {
   getType,
