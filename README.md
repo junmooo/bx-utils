@@ -845,6 +845,47 @@ cookie.remove('token');
 
 ---
 
+### 图片操作
+
+#### compressImage(file, maxSize)
+压缩图片，支持自定义目标文件大小和分辨率限制。
+
+**参数:**
+- `file` (File): 图片文件对象
+- `maxSize` (number): 压缩目标大小（MB），默认 4
+
+**返回:** Promise<File>: 压缩后的 File 对象
+
+**特性:**
+- 自动缩小超过 2560x2560 的图片分辨率
+- 通过逐步降低 JPEG 质量递归压缩，直到文件大小满足要求
+- 保留原文件名和修改时间
+- 处理加载失败和 Canvas 异常情况
+
+**示例:**
+```typescript
+// 基础用法，压缩至 4MB
+const imageInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+imageInput.addEventListener('change', async (e) => {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (file) {
+    const compressedFile = await compressImage(file);
+    console.log(`原始大小: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+    console.log(`压缩后大小: ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+  }
+});
+
+// 自定义压缩大小为 2MB
+const compressedFile = await compressImage(file, 2);
+
+// 上传压缩后的图片
+const formData = new FormData();
+formData.append('image', compressedFile);
+await fetch('/api/upload', { method: 'POST', body: formData });
+```
+
+---
+
 ### 通用工具
 
 #### getType(value)
