@@ -224,6 +224,47 @@ const isValid = validateBankCard('6222021234567890123');
 console.log('银行卡号是否有效:', isValid);
 ```
 
+#### validateName(val)
+验证姓名，支持中文名、英文名以及包含生僻字的姓名。
+
+**参数:**
+- `val` (string): 输入姓名
+
+**返回:** (boolean): 是否有效
+
+**示例:**
+```typescript
+console.log(validateName('张三')); // true
+console.log(validateName('Alice')); // true
+```
+
+#### validateChineseIdName(val)
+身份证姓名校验，仅支持中文及生僻字姓名。
+
+**参数:**
+- `val` (string): 姓名
+
+**返回:** (boolean): 是否有效
+
+**示例:**
+```typescript
+console.log(validateChineseIdName('李四')); // true
+console.log(validateChineseIdName('John')); // false
+```
+
+#### validateChinesePassportName(val)
+中国护照姓名校验，支持中文（含生僻字）、大写英文及特定的空格组合。
+
+**参数:**
+- `val` (string): 姓名
+
+**返回:** (boolean): 是否有效
+
+**示例:**
+```typescript
+console.log(validateChinesePassportName('张三 ZHANG SAN')); // true
+```
+
 ---
 
 ### 对象操作
@@ -681,6 +722,106 @@ console.log(escapeHtml('<div>')); // '&lt;div&gt;'
 **示例:**
 ```typescript
 console.log(unescapeHtml('&lt;div&gt;')); // '<div>'
+```
+
+---
+
+### 数据掩码
+
+#### maskChineseName(name)
+中文姓名掩码，保留姓，其余打掩码显示。
+
+**参数:**
+- `name` (string): 中文姓名
+
+**返回:** (string): 掩码后的姓名
+
+**示例:**
+```typescript
+console.log(maskChineseName('张三')); // '张*'
+console.log(maskChineseName('张小三')); // '张**'
+```
+
+#### maskEnglishName(name)
+英文姓名掩码，保留首字母，其余掩码显示。
+
+**参数:**
+- `name` (string): 英文姓名
+
+**返回:** (string): 掩码后的姓名
+
+**示例:**
+```typescript
+console.log(maskEnglishName('ZHANGSAN')); // 'Z*******'
+```
+
+#### maskName(name)
+智能姓名掩码，根据内容自动判断中英文。
+
+**参数:**
+- `name` (string): 姓名
+
+**返回:** (string): 掩码后的姓名
+
+**示例:**
+```typescript
+console.log(maskName('李四')); // '李*'
+console.log(maskName('Alice')); // 'A****'
+```
+
+#### maskCompanyName(name)
+公司名称掩码，保留第一个字，其余掩码显示。
+
+**参数:**
+- `name` (string): 公司名称
+
+**返回:** (string): 掩码后的公司名称
+
+**示例:**
+```typescript
+console.log(maskCompanyName('华为技术有限公司')); // '华*******'
+```
+
+#### maskIdCard(idCard)
+证件号码掩码，保留前3后2，中间掩码。
+
+**参数:**
+- `idCard` (string): 证件号码
+
+**返回:** (string): 掩码后的证件号码
+
+**示例:**
+```typescript
+console.log(maskIdCard('370101199001011234')); // '370*************34'
+```
+
+#### maskPhone(phone)
+电话号码掩码，前3后3明文，中间掩码。
+
+**参数:**
+- `phone` (string): 电话号码
+
+**返回:** (string): 掩码后的电话号码
+
+**示例:**
+```typescript
+console.log(maskPhone('15862518411')); // '158*****411'
+```
+
+#### maskGeneric(str, frontLen, endLen)
+通用掩码方法。
+
+**参数:**
+- `str` (string): 需要掩码的字符串
+- `frontLen` (number): 前面保留的字符数，默认 3
+- `endLen` (number): 后面保留的字符数，默认 2
+
+**返回:** (string): 掩码后的字符串
+
+**示例:**
+```typescript
+console.log(maskGeneric('abcdefg')); // 'abc**fg'
+console.log(maskGeneric('123456', 2, 0)); // '12****'
 ```
 
 ---
