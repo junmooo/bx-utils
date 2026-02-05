@@ -39,6 +39,9 @@ export const compressImage = (
 
       // 递归压缩直到文件大小满足要求
       const compress = (quality: number = 0.8): void => {
+        // 为了更有效的压缩，将PNG转换为JPEG
+        const mimeType = file.type === 'image/png' ? 'image/jpeg' : file.type;
+        
         canvas.toBlob(
           (blob: Blob | null) => {
             if (!blob) {
@@ -50,8 +53,9 @@ export const compressImage = (
 
             if (size <= maxSize || quality <= 0.1) {
               // 创建新的File对象
-              const compressedFile = new File([blob], file.name, {
-                type: file.type,
+              const fileName = file.name.replace(/\.png$/i, '.jpg');
+              const compressedFile = new File([blob], fileName, {
+                type: mimeType,
                 lastModified: Date.now(),
               });
               resolve(compressedFile);
@@ -60,7 +64,7 @@ export const compressImage = (
               compress(quality - 0.1);
             }
           },
-          file.type,
+          mimeType,
           quality,
         );
       };
