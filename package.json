@@ -1,6 +1,6 @@
 {
   "name": "bx-utils",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "常用JavaScript工具函数库，包含防抖节流、剪贴板操作、各种校验工具等",
   "type": "module",
   "main": "dist/index.js",
