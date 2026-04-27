@@ -55,18 +55,6 @@ export { compressImage } from './image';
 // 通用工具
 export { getType, isPromise, sleep, retry, curry, compose, pipe, isEmpty } from './common';
 
-// 数据掩码
-export {
-  getType,
-  isPromise,
-  sleep,
-  retry,
-  curry,
-  compose,
-  pipe,
-  isEmpty,
-} from './common';
-
 export {
   injectWatermark,
   removeWatermark,
