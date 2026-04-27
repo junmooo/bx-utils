@@ -57,11 +57,18 @@ export { getType, isPromise, sleep, retry, curry, compose, pipe, isEmpty } from 
 
 // 数据掩码
 export {
-  maskChineseName,
-  maskGeneric,
-  maskCompanyName,
-  maskEnglishName,
-  maskIdCard,
-  maskName,
-  maskPhone,
-} from './mask';
+  getType,
+  isPromise,
+  sleep,
+  retry,
+  curry,
+  compose,
+  pipe,
+  isEmpty,
+} from './common';
+
+export {
+  injectWatermark,
+  removeWatermark,
+  revealWatermark,
+} from './watermark';
