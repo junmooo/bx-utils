@@ -1102,6 +1102,51 @@ console.log(piped(5)); // 12 (先加1再乘2)
 
 ---
 
+### 水印工具
+
+提供网页水印生成、注入以及防篡改/防删除功能。
+
+#### injectWatermark(options)
+在网页中注入全屏平铺水印。支持自动响应窗口大小变化及防删除逻辑。
+
+**参数 `options` 对象属性:**
+- `text` (string): 水印文本（支持 `\n` 换行）
+- `fontSize` (number): 字号大小，默认建议 16-20
+- `color` (string): 文本颜色，如 `'#000000'`
+- `opacity` (number): 透明度 (0~1)
+- `angle` (number): 旋转角度（负值向左倾斜）
+- `gapX` (number): 横向间距
+- `gapY` (number): 纵向间距
+- `antiDelete` (boolean): 是否开启防删除/防篡改模式（通过 MutationObserver 监控）
+
+**示例:**
+```javascript
+import { injectWatermark } from 'bx-utils';
+
+injectWatermark({
+  text: '内部资料\n仅供参考',
+  fontSize: 18,
+  color: '#000',
+  opacity: 0.1,
+  angle: -20,
+  gapX: 100,
+  gapY: 100,
+  antiDelete: true
+});
+```
+
+#### removeWatermark()
+清理并移除页面上的全屏水印。同时会停止防删除监控和窗口缩放监听。
+
+**示例:**
+```javascript
+import { removeWatermark } from 'bx-utils';
+
+removeWatermark();
+```
+
+---
+
 ## 许可证
 
 MIT

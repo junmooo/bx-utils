@@ -81,3 +81,9 @@ export {
   pipe,
   isEmpty,
 } from './common';
+
+export {
+  injectWatermark,
+  removeWatermark,
+  revealWatermark,
+} from './watermark';
