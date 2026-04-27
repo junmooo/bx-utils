@@ -15,22 +15,45 @@ export function getUrlParams(url: string = window.location.href): Record<string,
 /**
  * 获取地址栏里所有参数的键值对
  */
-export const formatUrl = (urlStr: string) => {
+export const formatUrl = (urlStr?: string): Record<string, string> => {
   if (!(typeof urlStr === 'string' && urlStr.length)) urlStr = window.location.href;
-  var reg = /(?:[?&]+)([^&]+)=([^&]+)/g;
-  var data: Record<string, string> = {};
+  const data: Record<string, string> = {};
 
-  function fn(str: string, pro: string, value: string) {
-    data[decodeURIComponent(pro)] = decodeURIComponent(value);
-  }
-  let urlStrList = urlStr.split('#');
-  for (let i = 0; i < urlStrList.length; i++) {
-    urlStrList[i].replace(reg, (substring, ...args) => {
-      fn(substring, args[0], args[1]);
-      return substring;
+  // 尝试使用 URL API 解析（适用于标准 URL）
+  try {
+    const urlObj = new URL(urlStr);
+
+    // 主查询参数
+    urlObj.searchParams.forEach((value, key) => {
+      // 处理 '+' 代表空格的情况，再解码
+      data[decodeURIComponent(key)] = decodeURIComponent(value.replace(/\+/g, ' '));
     });
+
+    // hash 中可能包含查询参数，形如 #/path?x=1&y=2 或 #x=1&y=2
+    const hash = urlObj.hash ? urlObj.hash.slice(1) : '';
+    if (hash) {
+      const qIndex = hash.indexOf('?');
+      const hashQuery = qIndex >= 0 ? hash.slice(qIndex + 1) : hash;
+      if (hashQuery) {
+        const params = new URLSearchParams(hashQuery);
+        params.forEach((value, key) => {
+          data[decodeURIComponent(key)] = decodeURIComponent(value.replace(/\+/g, ' '));
+        });
+      }
+    }
+
+    return data;
+  } catch (e) {
+    // 回退到正则解析，支持非完整 URL 或简单查询字符串
+    const reg = /(?:^|[?&]+)([^&=]+)(?:=([^&]*))?/g;
+    let match: RegExpExecArray | null;
+    while ((match = reg.exec(urlStr)) !== null) {
+      const key = decodeURIComponent(match[1]);
+      const value = match[2] !== undefined ? decodeURIComponent(match[2].replace(/\+/g, ' ')) : '';
+      data[key] = value;
+    }
+    return data;
   }
-  return data;
 };
 
 /**

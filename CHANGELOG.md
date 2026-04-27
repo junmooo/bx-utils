@@ -1,5 +1,26 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- 图片操作：图片压缩功能（compressImage），支持自定义目标文件大小和分辨率限制
+- URL操作：formatUrl 函数，用于提取 URL 参数为键值对，支持主查询和 hash 中的参数
+- 通用工具：isEmpty 函数，判断值是否为空（包括 null、undefined、空字符串、空数组、空对象等）
+
+### Changed
+- 字符串操作：将 isEmpty 重命名为 isEmptyStr，以提高可读性并避免与通用工具中的 isEmpty 混淆
+- 优化 formatUrl 实现，支持 URL 编码解码、+ 号转空格、无值参数、hash 查询参数解析
+- 完善图片压缩和 URL 解析的单元测试覆盖
+
+### Fixed
+- 修复图片压缩测试中的 TypeScript 类型错误
+- 修复剪贴板测试中的 console 错误输出
+
+## [1.0.2] - 2025-10-27
+
+### Changed
+- 更新项目依赖管理，移除 package-lock.json
+
 ## [1.0.0] - 2025-10-23
 
 ### Added

@@ -1,4 +1,4 @@
-import { getUrlParams, setUrlParams, removeUrlParams, parseUrl } from '../url';
+import { getUrlParams, setUrlParams, removeUrlParams, parseUrl, formatUrl } from '../url';
 
 describe('url', () => {
   describe('getUrlParams', () => {
@@ -40,10 +40,7 @@ describe('url', () => {
     });
 
     it('应该移除多个参数', () => {
-      const url = removeUrlParams(
-        'https://example.com?id=1&name=test&age=20',
-        ['name', 'age']
-      );
+      const url = removeUrlParams('https://example.com?id=1&name=test&age=20', ['name', 'age']);
       expect(url).toContain('id=1');
       expect(url).not.toContain('name');
       expect(url).not.toContain('age');
@@ -60,6 +57,38 @@ describe('url', () => {
       expect(parsed.search).toBe('?id=1');
       expect(parsed.hash).toBe('#hash');
       expect(parsed.params).toEqual({ id: '1' });
+    });
+  });
+
+  describe('formatUrl', () => {
+    it('解析查询和 hash 中的参数', () => {
+      const url = 'https://example.com/path?x=1&y=2#h=3';
+      const res = formatUrl(url);
+      expect(res).toEqual({ x: '1', y: '2', h: '3' });
+    });
+
+    it('解码编码和 + 为空格', () => {
+      const url = 'https://example.com/?a=hello%20world&b=hello+world';
+      const res = formatUrl(url);
+      expect(res).toEqual({ a: 'hello world', b: 'hello world' });
+    });
+
+    it('支持无值参数', () => {
+      const url = 'https://example.com/?a&b=2';
+      const res = formatUrl(url);
+      expect(res).toEqual({ a: '', b: '2' });
+    });
+
+    it('解析 hash 中的查询字符串', () => {
+      const url = 'https://example.com/#/path?a=1&b=2';
+      const res = formatUrl(url);
+      expect(res).toEqual({ a: '1', b: '2' });
+    });
+
+    it('回退到正则解析非 URL 字符串', () => {
+      const str = 'a=1&b=2';
+      const res = formatUrl(str as any);
+      expect(res).toEqual({ a: '1', b: '2' });
     });
   });
 });

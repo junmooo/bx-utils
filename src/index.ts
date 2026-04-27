@@ -26,26 +26,10 @@ export { formatDate, timeAgo, daysBetween } from './date';
 export { randomString, uuid, randomInt, shuffle } from './random';
 
 // 格式化
-export {
-  formatFileSize,
-  formatNumber,
-  formatCurrency,
-  numberToChinese,
-} from './format';
+export { formatFileSize, formatNumber, formatCurrency, numberToChinese } from './format';
 
 // 数组操作
-export {
-  unique,
-  chunk,
-  flatten,
-  sum,
-  average,
-  max,
-  min,
-  intersection,
-  union,
-  difference,
-} from './array';
+export { unique, chunk, flatten, sum, average, max, min, intersection, union, difference } from './array';
 
 // 字符串操作
 export {
@@ -60,17 +44,18 @@ export {
 } from './string';
 
 // URL操作
-export {
-  getUrlParams,
-  setUrlParams,
-  removeUrlParams,
-  parseUrl,
-} from './url';
+export { getUrlParams, setUrlParams, removeUrlParams, parseUrl } from './url';
 
 // 存储操作
 export { storage, cookie } from './storage';
 
+// 图片操作
+export { compressImage } from './image';
+
 // 通用工具
+export { getType, isPromise, sleep, retry, curry, compose, pipe, isEmpty } from './common';
+
+// 数据掩码
 export {
   getType,
   isPromise,
