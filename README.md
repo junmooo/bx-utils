@@ -1145,22 +1145,36 @@ console.log(piped(5)); // 12 (先加1再乘2)
 
 ### 水印工具
 
-提供网页水印生成、注入以及防篡改/防删除功能。
+提供文本水印、条形码水印注入，以及水印还原能力。
 
 #### injectWatermark(options)
 在网页中注入全屏平铺水印。支持自动响应窗口大小变化及防删除逻辑。
 
 **参数 `options` 对象属性:**
-- `text` (string): 水印文本（支持 `\n` 换行）
-- `fontSize` (number): 字号大小，默认建议 16-20
-- `color` (string): 文本颜色，如 `'#000000'`
+
+通用参数：
+- `type` (`'text' | 'barcode'`): 水印类型，默认 `'text'`
+- `text` (string): 文本内容或条形码内容
 - `opacity` (number): 透明度 (0~1)
 - `angle` (number): 旋转角度（负值向左倾斜）
 - `gapX` (number): 横向间距
 - `gapY` (number): 纵向间距
 - `antiDelete` (boolean): 是否开启防删除/防篡改模式（通过 MutationObserver 监控）
 
-**示例:**
+文本水印参数：
+- `fontSize` (number): 字号大小，默认建议 16-20
+- `color` (string): 文本颜色，如 `'#000000'`
+
+条形码水印参数：
+- `format` (string): 条形码格式，默认 `'CODE128'`
+- `lineColor` (string): 条形码线条颜色，默认 `'#000'`
+- `barWidth` (number): 条码单条宽度，默认 `1`
+- `barHeight` (number): 条形码高度，默认 `40`
+- `displayValue` (boolean): 是否显示条码文字，默认 `true`
+- `fontSize` (number): 条码文字字号，默认 `14`
+- `color` (string): 线条颜色兜底值，仅在未传 `lineColor` 时使用
+
+**文本水印示例:**
 ```javascript
 import { injectWatermark } from 'bx-utils';
 
@@ -1172,7 +1186,28 @@ injectWatermark({
   angle: -20,
   gapX: 100,
   gapY: 100,
-  antiDelete: true
+  antiDelete: false,
+});
+```
+
+**条形码水印示例:**
+```javascript
+import { injectWatermark } from 'bx-utils';
+
+injectWatermark({
+  type: 'barcode',
+  text: 'ORDER-20260428-001',
+  format: 'CODE128',
+  lineColor: '#1f2937',
+  barWidth: 2,
+  barHeight: 56,
+  displayValue: true,
+  fontSize: 14,
+  opacity: 0.12,
+  angle: -18,
+  gapX: 120,
+  gapY: 96,
+  antiDelete: true,
 });
 ```
 
@@ -1184,6 +1219,36 @@ injectWatermark({
 import { removeWatermark } from 'bx-utils';
 
 removeWatermark();
+```
+
+#### revealWatermark(file, options)
+对图片中的暗水印做增强还原，返回 PNG Data URL。
+
+**参数:**
+- `file` (File | Blob | string): 原始图片文件或 dataURL
+- `options.method` (`'multiscale' | 'highfreq' | 'amplify' | 'stretch' | 'filter'`): 还原方法，默认 `'multiscale'`
+- `options.grayscale` (boolean): 是否输出灰度图
+- `options.amplify` (number): 高频或偏差放大倍数
+- `options.blockSize` (number): `multiscale` 的局部块大小
+- `options.blurRadius` (number): `highfreq` 的模糊半径
+- `options.bgType` (`'bright' | 'dark'`): `amplify` 的背景类型
+- `options.lowP` (number): `stretch` 的低分位点，默认 `1`
+- `options.highP` (number): `stretch` 的高分位点，默认 `99`
+- `options.contrast` (number): `filter` 的对比度系数
+- `options.brightness` (number): `filter` 的亮度系数
+
+**示例:**
+```javascript
+import { revealWatermark } from 'bx-utils';
+
+const result = await revealWatermark(file, {
+  method: 'stretch',
+  lowP: 2,
+  highP: 98,
+  grayscale: true,
+});
+
+console.log(result); // data:image/png;base64,...
 ```
 
 ---

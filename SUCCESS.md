@@ -3,7 +3,7 @@
 ## 发布信息
 
 - **包名**: bx-utils
-- **版本**: 1.0.0
+- **版本**: 1.0.7
 - **发布时间**: 2025年10月23日
 - **NPM 链接**: https://www.npmjs.com/package/bx-utils
 - **下载地址**: https://registry.npmjs.org/bx-utils/-/bx-utils-1.0.0.tgz

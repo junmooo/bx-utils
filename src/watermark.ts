@@ -3,21 +3,43 @@
  * 提供水印生成、页面注入（含 MutationObserver 防删除）、水印还原五种算法
  */
 
-export interface WatermarkTileOptions {
+import JsBarcode from 'jsbarcode';
+
+export type WatermarkType = 'text' | 'barcode';
+
+interface BaseWatermarkTileOptions {
   text: string;
-  fontSize: number;
   opacity: number;
   angle: number;
-  color: string;
   gapX: number;
   gapY: number;
+  type?: WatermarkType;
 }
 
-export interface InjectWatermarkOptions extends WatermarkTileOptions {
-  antiDelete?: boolean;
+export interface TextWatermarkTileOptions extends BaseWatermarkTileOptions {
+  type?: 'text';
+  fontSize: number;
+  color: string;
 }
 
-export type RevealMethod = 'multiscale' | 'highfreq' | 'amplify' | 'stretch' | 'filter';
+export interface BarcodeWatermarkTileOptions extends BaseWatermarkTileOptions {
+  type: 'barcode';
+  format?: string;
+  lineColor?: string;
+  barWidth?: number;
+  barHeight?: number;
+  displayValue?: boolean;
+  fontSize?: number;
+  color?: string;
+}
+
+export type WatermarkTileOptions = TextWatermarkTileOptions | BarcodeWatermarkTileOptions;
+
+export type InjectWatermarkOptions =
+  | (TextWatermarkTileOptions & { antiDelete?: boolean })
+  | (BarcodeWatermarkTileOptions & { antiDelete?: boolean });
+
+export type RevealBackgroundType = 'bright' | 'dark';
 
 export interface RevealWatermarkOptions {
   method?: RevealMethod;
@@ -27,7 +49,12 @@ export interface RevealWatermarkOptions {
   blurRadius?: number;
   contrast?: number;
   brightness?: number;
+  bgType?: RevealBackgroundType;
+  lowP?: number;
+  highP?: number;
 }
+
+export type RevealMethod = 'multiscale' | 'highfreq' | 'amplify' | 'stretch' | 'filter';
 
 function get2dContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   const context = canvas.getContext('2d');
@@ -43,6 +70,62 @@ function get2dContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
    Section 1 · 水印生成
 ═══════════════════════════════════════════ */
 
+function isBarcodeWatermarkOptions(
+  options: WatermarkTileOptions | InjectWatermarkOptions
+): options is BarcodeWatermarkTileOptions {
+  return options.type === 'barcode';
+}
+
+/**
+ * 生成单块条形码水印 Canvas Tile
+ */
+export function createBarcodeWatermarkTile({
+  text,
+  format = 'CODE128',
+  lineColor,
+  barWidth = 1,
+  barHeight = 40,
+  displayValue = true,
+  fontSize = 14,
+  opacity,
+  angle,
+  color,
+  gapX,
+  gapY,
+}: BarcodeWatermarkTileOptions): HTMLCanvasElement {
+  const barcodeCanvas = document.createElement('canvas');
+  const resolvedLineColor = lineColor ?? color ?? '#000';
+
+  JsBarcode(barcodeCanvas, text, {
+    format,
+    lineColor: resolvedLineColor,
+    width: barWidth,
+    height: barHeight,
+    displayValue,
+    fontSize,
+    textAlign: 'center',
+    margin: 0,
+  });
+
+  const barcodeWidth = barcodeCanvas.width;
+  const barcodeHeight = barcodeCanvas.height;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = barcodeWidth + gapX;
+  canvas.height = barcodeHeight + gapY;
+
+  const context = get2dContext(canvas);
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.save();
+  context.translate(canvas.width / 2, canvas.height / 2);
+  context.rotate((angle * Math.PI) / 180);
+  context.globalAlpha = opacity;
+  context.drawImage(barcodeCanvas, -barcodeWidth / 2, -barcodeHeight / 2);
+  context.restore();
+
+  return canvas;
+}
+
 /**
  * 生成单块水印 Canvas Tile
  */
@@ -54,7 +137,7 @@ export function createWatermarkTile({
   color,
   gapX,
   gapY,
-}: WatermarkTileOptions): HTMLCanvasElement {
+}: TextWatermarkTileOptions): HTMLCanvasElement {
   const lines = text.split('\n');
   const probe = document.createElement('canvas');
   const probeContext = get2dContext(probe);
@@ -89,6 +172,12 @@ export function createWatermarkTile({
   return canvas;
 }
 
+function createWatermarkTileCanvas(options: WatermarkTileOptions): HTMLCanvasElement {
+  return isBarcodeWatermarkOptions(options)
+    ? createBarcodeWatermarkTile(options)
+    : createWatermarkTile(options);
+}
+
 /**
  * 将水印 tile 平铺绘制到目标 Canvas
  */
@@ -104,7 +193,7 @@ export function drawWatermarkToCanvas(
   const context = get2dContext(target);
   context.clearRect(0, 0, width, height);
 
-  const tile = createWatermarkTile(options);
+  const tile = createWatermarkTileCanvas(options);
   const pattern = context.createPattern(tile, 'repeat');
 
   if (!pattern) {
@@ -233,6 +322,7 @@ function loadImage(file: Blob | string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     const objectUrl = file instanceof Blob ? URL.createObjectURL(file) : null;
+    const imageSource = typeof file === 'string' ? file : objectUrl;
 
     image.onload = () => {
       if (objectUrl) {
@@ -250,7 +340,12 @@ function loadImage(file: Blob | string): Promise<HTMLImageElement> {
       reject(event);
     };
 
-    image.src = objectUrl ?? file;
+    if (!imageSource) {
+      reject(new Error('Failed to resolve image source.'));
+      return;
+    }
+
+    image.src = imageSource;
   });
 }
 
@@ -425,7 +520,68 @@ function revealHighFreq(
   return output;
 }
 
-/* ── 算法 3: 对比度/亮度拉伸 ── */
+/* ── 算法 3: 偏差放大（纯色背景专用） ── */
+function revealAmplify(
+  imageData: ImageData,
+  width: number,
+  height: number,
+  { amplify = 40, bgType = 'bright' }: RevealWatermarkOptions
+): ImageData {
+  const source = imageData.data;
+  const output = new ImageData(width, height);
+  const data = output.data;
+  const base = bgType === 'bright' ? 255 : 0;
+
+  for (let index = 0; index < width * height; index++) {
+    const pixelIndex = index * 4;
+    data[pixelIndex] = clamp(128 + (source[pixelIndex] - base) * amplify);
+    data[pixelIndex + 1] = clamp(128 + (source[pixelIndex + 1] - base) * amplify);
+    data[pixelIndex + 2] = clamp(128 + (source[pixelIndex + 2] - base) * amplify);
+    data[pixelIndex + 3] = 255;
+  }
+
+  return output;
+}
+
+/* ── 算法 4: 分位数拉伸 ── */
+function revealStretch(
+  imageData: ImageData,
+  width: number,
+  height: number,
+  { lowP = 1, highP = 99 }: RevealWatermarkOptions
+): ImageData {
+  const source = imageData.data;
+  const output = new ImageData(width, height);
+  const data = output.data;
+  const pixelCount = width * height;
+
+  for (let channel = 0; channel < 3; channel++) {
+    const values = new Float32Array(pixelCount);
+
+    for (let index = 0; index < pixelCount; index++) {
+      values[index] = source[index * 4 + channel];
+    }
+
+    const sorted = Float32Array.from(values).sort();
+    const lowIndex = Math.min(pixelCount - 1, Math.max(0, Math.floor((pixelCount * lowP) / 100)));
+    const highIndex = Math.min(pixelCount - 1, Math.max(0, Math.floor((pixelCount * highP) / 100)));
+    const lowValue = sorted[lowIndex];
+    const highValue = sorted[highIndex];
+    const range = highValue - lowValue || 1;
+
+    for (let index = 0; index < pixelCount; index++) {
+      data[index * 4 + channel] = clamp(((values[index] - lowValue) / range) * 255);
+    }
+  }
+
+  for (let index = 0; index < pixelCount; index++) {
+    data[index * 4 + 3] = 255;
+  }
+
+  return output;
+}
+
+/* ── 算法 5: 对比度/亮度拉伸 ── */
 function revealFilter(
   imageData: ImageData,
   width: number,
@@ -466,6 +622,12 @@ export async function revealWatermark(
   switch (options.method) {
     case 'highfreq':
       result = revealHighFreq(data, w, h, options);
+      break;
+    case 'amplify':
+      result = revealAmplify(data, w, h, options);
+      break;
+    case 'stretch':
+      result = revealStretch(data, w, h, options);
       break;
     case 'filter':
       result = revealFilter(data, w, h, options);
